@@ -16,35 +16,37 @@ namespace findcontiguous
             int n;
             while (int.TryParse(Console.ReadLine(), out n))
             {
-                var originalList = Enumerable.Range(0, n).Select(_ => r.Next(n));
-
+                var originalList = Enumerable.Range(0, n).Select(_ => r.Next(10000000)).ToArray();
                 var stopwatch = new Stopwatch();
                 stopwatch.Start();
 
                 // O(N)
                 var h = new HashSet<int>(originalList);
-
+                var found = new HashSet<int>();
                 var sequences = new List<List<int>>();
 
-                while (h.Any())
+                foreach (var current in h)
                 {
-                    // O(1)
-                    var current = h.First();
-                    h.Remove(current);
+                    if (found.Contains(current))
+                    {
+                        continue;
+                    }
+
+                    found.Add(current);
 
                     var sequence = new List<int>() { current };
 
                     var i = current;
-                    while (h.Any() && h.Contains(--i)) // O(1)
+                    while (h.Contains(--i)) // O(1)
                     {
-                        h.Remove(i);
+                        found.Add(i);
                         sequence.Add(i);
                     }
 
                     i = current;
-                    while (h.Any() && h.Contains(++i)) // O(1)
+                    while (h.Contains(++i)) // O(1)
                     {
-                        h.Remove(i);
+                        found.Add(i);
                         sequence.Add(i);
                     }
 
@@ -53,15 +55,15 @@ namespace findcontiguous
 
                 stopwatch.Stop();
 
-                Console.WriteLine(string.Join(", ", originalList));
+                ////Console.WriteLine(string.Join(", ", originalList));
 
-                Console.WriteLine(
-                    string.Join(
-                        Environment.NewLine,
-                        sequences
-                            .OrderBy(s => s.Min())
-                            .Select(
-                                s => string.Join(", ", s.OrderBy(v => v)))));
+                ////Console.WriteLine(
+                ////    string.Join(
+                ////        Environment.NewLine,
+                ////        sequences
+                ////            .OrderBy(s => s.Min())
+                ////            .Select(
+                ////                s => string.Join(", ", s.OrderBy(v => v)))));
 
                 var longest = sequences.Select(s => s.Count).Max();
 
