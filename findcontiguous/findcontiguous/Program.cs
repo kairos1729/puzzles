@@ -34,18 +34,26 @@ namespace findcontiguous
                 var randomWorstCase = ToRandomOrder(worstCaseList);
                 var randomWorstCase2 = ToRandomOrder(worstCaseList);
 
-                FindSequencesStandardHash("Best", bestCaseList);
-                FindSequencesStandardHash("Worst", worstCaseList);
-                FindSequencesStandardHash("BestR", randomBestCase);
-                FindSequencesStandardHash("Random", randomList);
-                FindSequencesStandardHash("WorstR", randomWorstCase);
-                FindSequencesStandardHash("WorstR2", randomWorstCase2);
-                FindSequencesMyHash("MyBest", bestCaseList);
-                FindSequencesMyHash("MyWorst", worstCaseList);
-                FindSequencesMyHash("MyBestR", randomBestCase);
-                FindSequencesMyHash("MyRandom", randomList);
-                FindSequencesMyHash("MyWorstR", randomWorstCase);
-                FindSequencesMyHash("MyWorstR2", randomWorstCase2);
+                ////FindSequencesStandardHash("Best", bestCaseList);
+                ////FindSequencesStandardHash("Worst", worstCaseList);
+                ////FindSequencesStandardHash("BestR", randomBestCase);
+                ////FindSequencesStandardHash("Random", randomList);
+                ////FindSequencesStandardHash("WorstR", randomWorstCase);
+                ////FindSequencesStandardHash("WorstR2", randomWorstCase2);
+                ////Console.WriteLine();
+                ////FindSequencesMyHash("MyBest", bestCaseList);
+                ////FindSequencesMyHash("MyWorst", worstCaseList);
+                ////FindSequencesMyHash("MyBestR", randomBestCase);
+                ////FindSequencesMyHash("MyRandom", randomList);
+                ////FindSequencesMyHash("MyWorstR", randomWorstCase);
+                ////FindSequencesMyHash("MyWorstR2", randomWorstCase2);
+                ////Console.WriteLine();
+                FindSequencesSuccinct("MyBest", bestCaseList);
+                FindSequencesSuccinct("MyWorst", worstCaseList);
+                FindSequencesSuccinct("MyBestR", randomBestCase);
+                FindSequencesSuccinct("MyRandom", randomList);
+                FindSequencesSuccinct("MyWorstR", randomWorstCase);
+                FindSequencesSuccinct("MyWorstR2", randomWorstCase2);
             }
         }
 
@@ -87,7 +95,7 @@ namespace findcontiguous
         }
 
         private static void FindSequences(
-            string description, 
+            string description,
             IEnumerable<int> toBeSearched,
             Func<int, IMyIntHashSet> emptyHashSetCreator,
             Func<ICollection<int>, IMyIntHashSet> populatedHashSetCreator)
@@ -190,6 +198,52 @@ namespace findcontiguous
             ////        upcount,
             ////        downcount + upcount,
             ////        count));
+        }
+
+        private static void FindSequencesSuccinct(
+            string description,
+            IEnumerable<int> toBeSearched)
+        {
+            var xs = toBeSearched.ToList();
+            var sw = new Stopwatch();
+            sw.Start();
+
+            var l = FindLongestSequenceLength(xs);
+
+            sw.Stop();
+
+            Console.WriteLine(
+                string.Format(
+                "{0,10}: n={1,9} longest={2,9} Ticks={3,9}", 
+                description, xs.Count, l, sw.ElapsedTicks));
+        }
+
+        private static int FindLongestSequenceLength(IList<int> xs)
+        {
+            var xsSet = new HashSet<int>(xs);
+            var found = new HashSet<int>();
+            var maxLen = 1;
+
+            foreach (var x in xsSet)
+            {
+                if (found.Contains(x)) continue;
+
+                found.Add(x);                
+                
+                var len = 1;
+
+                for (var i = x - 1;
+                    xsSet.Contains(i);
+                    --i, ++len, found.Add(i));
+
+                for (var i = x + 1;
+                    xsSet.Contains(i);
+                    ++i, ++len, found.Add(i));
+
+                if (len > maxLen) maxLen = len;
+            }
+
+            return maxLen;
         }
     }
 }
