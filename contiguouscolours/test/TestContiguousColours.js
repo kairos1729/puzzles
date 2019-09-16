@@ -9,7 +9,7 @@ describe('TestContiguousColours', function() {
 
     describe('shouldFindColours', function () {
 
-        const LOTS = 100;
+        const LOTS = 50;
         const manyRow = new Array(LOTS).fill(1);
         const manyGrid = new Array(LOTS).fill(manyRow);
 

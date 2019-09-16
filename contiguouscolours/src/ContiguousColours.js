@@ -1,50 +1,92 @@
 class ContiguousCounts {
     constructor(colours) {
-        this.colourGrid = colours.map(
-            row => row.map(
-                colour => new ColourEntry(
-                    colour,
-                    false,
-                    false)));
-
-        console.log(this.colourGrid);
-
         this.nRows = colours.length;
         this.nCols = colours[0].length;
+
+        this.colourGrid = [];
+        for (let row = 0; row < this.nRows; ++row) {
+            const r = colours[row];
+            for (let col = 0; col < this.nCols; ++col) {
+                this.colourGrid.push(
+                    new ColourEntry(r[col], false, false));
+            }
+        }
+
+        //console.log(this.colourGrid);
+
         this.counts = new Map();
     }
 
     getContiguousCounts() {
-        for (let col = 0; col < this.nCols; ++col) {
-            for (let row = 0; row < this.nRows; ++row) {
-                if (!this.getEntry(row, col).visited) {
-                    this.addColourCount(this.countContiguous(row, col));
-                }
+        for (let index = 0; index < this.colourGrid.length; ++index) {
+            const entry = this.getEntry(index);
+            if (!entry.visited) {
+                this.addColourCount(this.countContiguous(index, entry));
             }
         }
         return this.counts;
     }
 
-    getEntry(row, col) {
-        return this.colourGrid[row][col];
+    getEntry(index) {
+        return this.colourGrid[index];
     }
 
-    countContiguous(row, col) {
+    countContiguous(index, entry) {
         const colourCount = {
-            colour: this.colourGrid[row][col].colour,
+            colour: entry.colour,
             count: 0
         };
-        let working = [ContiguousCounts.gridSquare(row, col)];
+        let working = [index];
         while (working.length > 0) {
             let current = working.pop();
-            const entry = this.getEntry(current.row, current.col);
-            entry.visited = true;
+            const currentEntry = this.getEntry(current);
+            currentEntry.visited = true;
             ++colourCount.count;
-            console.log(colourCount.count);
-            console.log("l: " + working.length);
-            working.push(...this.getAdjacent(current.row, current.col, colourCount.colour));
+           //console.log("l: " + working.length);
+            working.push(...this.getAdjacent(current, colourCount.colour));
         }
         return colourCount;
+    }
+
+    flatten(row, col) {
+        return col + row * this.nCols;
+    }
+
+    rowFrom(index) {
+        return Math.floor(index / this.nCols);
+    }
+
+    colFrom(index) {
+        return index % this.nCols;
+    }
+
+    getAdjacent(index, colour) {
+        const row = this.rowFrom(index);
+        const col = this.colFrom(index);
+        const coords = [
+            ContiguousCounts.gridSquare(row + 1, col),
+            ContiguousCounts.gridSquare(row - 1, col),
+            ContiguousCounts.gridSquare(row, col - 1),
+            ContiguousCounts.gridSquare(row, col + 1),
+        ];
+
+        const map = coords.filter(c => {
+            const ok = c.row >= 0 &&
+                c.row < this.nRows &&
+                c.col >= 0 &&
+                c.col < this.nCols;
+
+            if (ok) {
+                const entry = this.getEntry(this.flatten(c.row, c.col));
+                if (entry.pending || entry.visited || entry.colour !== colour) {
+                    return false;
+                }
+                entry.pending = true;
+                return true;
+            }
+            return false;
+        }).map(c => this.flatten(c.row, c.col));
+        return map;
     }
 
     addColourCount(colourCount) {
@@ -56,30 +98,6 @@ class ContiguousCounts {
 
     static gridSquare(row, col) {
         return {row: row, col: col};
-    }
-
-    getAdjacent(row, col, colour) {
-        const coords = [
-            ContiguousCounts.gridSquare(row + 1, col),
-            ContiguousCounts.gridSquare(row - 1, col),
-            ContiguousCounts.gridSquare(row, col - 1),
-            ContiguousCounts.gridSquare(row, col + 1),
-        ];
-
-        return coords.filter(c => {
-            if (c.row >= 0 &&
-                c.row < this.nRows &&
-                c.col >= 0 &&
-                c.col < this.nCols) {
-                const entry = this.getEntry(c.row, c.col);
-                if (entry.pending || entry.visited || entry.colour !== colour) {
-                    return false;
-                }
-                entry.pending = true;
-                return true;
-            }
-            return false;
-        });
     }
 }
 
