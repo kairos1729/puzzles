@@ -9,7 +9,7 @@ describe('TestContiguousColours', function() {
 
     describe('shouldFindColours', function () {
 
-        const LOTS = 50;
+        const LOTS = 100;
         const manyRow = new Array(LOTS).fill(1);
         const manyGrid = new Array(LOTS).fill(manyRow);
 
@@ -34,7 +34,7 @@ describe('TestContiguousColours', function() {
                 ], expected: [[10, 7], [50, 1]], name: "I"
             },
             {
-                grid: manyGrid, expected: [[1, 3000]], name: "Big"
+                grid: manyGrid, expected: [[1, 10000]], name: "Big"
             },
         ];
         tests.forEach(function (test) {

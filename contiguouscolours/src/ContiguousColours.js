@@ -2,18 +2,14 @@ class ContiguousCounts {
     constructor(colours) {
         this.nRows = colours.length;
         this.nCols = colours[0].length;
-
-        this.colourGrid = [];
+        this.colourGrid = new Array(this.nRows * this.nCols);
         for (let row = 0; row < this.nRows; ++row) {
             const r = colours[row];
             for (let col = 0; col < this.nCols; ++col) {
-                this.colourGrid.push(
-                    new ColourEntry(r[col], false, false));
+                this.colourGrid[this.flatten(row, col)] =
+                    new ColourEntry(r[col], false, false);
             }
         }
-
-        //console.log(this.colourGrid);
-
         this.counts = new Map();
     }
 
@@ -38,11 +34,11 @@ class ContiguousCounts {
         };
         let working = [index];
         while (working.length > 0) {
-            let current = working.pop();
+            // shift for breadth-first, pop for depth-first.
+            let current = working.shift();
             const currentEntry = this.getEntry(current);
             currentEntry.visited = true;
             ++colourCount.count;
-           //console.log("l: " + working.length);
             working.push(...this.getAdjacent(current, colourCount.colour));
         }
         return colourCount;
@@ -70,23 +66,20 @@ class ContiguousCounts {
             ContiguousCounts.gridSquare(row, col + 1),
         ];
 
-        const map = coords.filter(c => {
-            const ok = c.row >= 0 &&
-                c.row < this.nRows &&
-                c.col >= 0 &&
-                c.col < this.nCols;
-
-            if (ok) {
-                const entry = this.getEntry(this.flatten(c.row, c.col));
+        return coords.filter(c =>
+            c.row >= 0 &&
+            c.row < this.nRows &&
+            c.col >= 0 &&
+            c.col < this.nCols)
+            .map(c => this.flatten(c.row, c.col))
+            .filter(i => {
+                const entry = this.getEntry(i);
                 if (entry.pending || entry.visited || entry.colour !== colour) {
                     return false;
                 }
                 entry.pending = true;
                 return true;
-            }
-            return false;
-        }).map(c => this.flatten(c.row, c.col));
-        return map;
+            });
     }
 
     addColourCount(colourCount) {
