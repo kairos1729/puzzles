@@ -49,7 +49,7 @@ function countContiguous(row, col) {
         }
         SEEN.add(coordinateKey(current.row, current.col));
         ++colourCount.count;
-        working.push(...getAdjacentUnseen(current.row, current.col));
+        working.push(...getAdjacent(current.row, current.col));
     }
     return colourCount;
 }
@@ -58,7 +58,7 @@ function coord(row, col) {
     return {row: row, col: col};
 }
 
-function getAdjacentUnseen(row, col) {
+function getAdjacent(row, col) {
     const coords = [
         coord(row - 1, col),
         coord(row + 1, col),
