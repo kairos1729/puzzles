@@ -15,12 +15,12 @@ console.log(Array.from(SEEN).sort((a, b) => a - b));
 console.log("counts: ");
 console.log(colourCounts);
 
-function getContiguousCounts() {
+function getContiguousCounts(colours) {
     const counts = new Map();
     for (let col = 0; col < NCOL ; ++col) {
         for (let row = 0; row < NROW; ++ row) {
             if (!SEEN.has(coordinateKey(row, col))) {
-                const colourCount = countContiguous(row, col);
+                const colourCount = countContiguous(row, col, colours);
                 if (!counts.has(colourCount.colour) ||
                     counts.get(colourCount.colour) < colourCount.count) {
                     counts.set(colourCount.colour, colourCount.count);
@@ -35,15 +35,15 @@ function coordinateKey(row, col) {
     return col + row * NCOL;
 }
 
-function countContiguous(row, col) {
+function countContiguous(row, col, colours) {
     const colourCount = {
-        colour: COLOURS[row][col],
+        colour: colours[row][col],
         count: 0
     };
     let working = [coord(row, col)];
     while (working.length > 0) {
         let current = working.pop();
-        if (COLOURS[current.row][current.col] !== colourCount.colour
+        if (colours[current.row][current.col] !== colourCount.colour
             || SEEN.has(coordinateKey(current.row, current.col))) {
             continue;
         }
