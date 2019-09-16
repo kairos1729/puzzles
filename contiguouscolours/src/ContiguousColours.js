@@ -1,74 +1,127 @@
-const COLOURS = [
-    [1, 1, 2, 3],
-    [1, 1, 2, 4],
-    [2, 2, 1, 4]
-];
+class ContiguousCounts {
+    constructor(colours) {
+        this.colourGrid = colours.map(
+            row => row.map(
+                colour => new ColourEntry(
+                    colour,
+                    false,
+                    false)));
 
-const NCOL = COLOURS[0].length;
-const NROW = COLOURS.length;
-const SEEN = new Set();
+        console.log(this.colourGrid);
 
-colourCounts = getContiguousCounts(COLOURS);
-console.log("seen: ");
-console.log(SEEN);
-console.log(Array.from(SEEN).sort((a, b) => a - b));
-console.log("counts: ");
-console.log(colourCounts);
+        this.nRows = colours.length;
+        this.nCols = colours[0].length;
+        this.counts = new Map();
+    }
 
-function getContiguousCounts(colours) {
-    const counts = new Map();
-    for (let col = 0; col < NCOL ; ++col) {
-        for (let row = 0; row < NROW; ++ row) {
-            if (!SEEN.has(coordinateKey(row, col))) {
-                const colourCount = countContiguous(row, col, colours);
-                if (!counts.has(colourCount.colour) ||
-                    counts.get(colourCount.colour) < colourCount.count) {
-                    counts.set(colourCount.colour, colourCount.count);
+    getContiguousCounts() {
+        for (let col = 0; col < this.nCols; ++col) {
+            for (let row = 0; row < this.nRows; ++row) {
+                if (!this.getEntry(row, col).visited) {
+                    this.addColourCount(this.countContiguous(row, col));
                 }
             }
         }
+        return this.counts;
     }
-    return counts;
-}
 
-function coordinateKey(row, col) {
-    return col + row * NCOL;
-}
+    getEntry(row, col) {
+        return this.colourGrid[row][col];
+    }
 
-function countContiguous(row, col, colours) {
-    const colourCount = {
-        colour: colours[row][col],
-        count: 0
-    };
-    let working = [coord(row, col)];
-    while (working.length > 0) {
-        let current = working.pop();
-        if (colours[current.row][current.col] !== colourCount.colour
-            || SEEN.has(coordinateKey(current.row, current.col))) {
-            continue;
+    countContiguous(row, col) {
+        const colourCount = {
+            colour: this.colourGrid[row][col].colour,
+            count: 0
+        };
+        let working = [ContiguousCounts.gridSquare(row, col)];
+        while (working.length > 0) {
+            let current = working.pop();
+            const entry = this.getEntry(current.row, current.col);
+            entry.visited = true;
+            ++colourCount.count;
+            console.log(colourCount.count);
+            console.log("l: " + working.length);
+            working.push(...this.getAdjacent(current.row, current.col, colourCount.colour));
         }
-        SEEN.add(coordinateKey(current.row, current.col));
-        ++colourCount.count;
-        working.push(...getAdjacent(current.row, current.col));
+        return colourCount;
     }
-    return colourCount;
+
+    addColourCount(colourCount) {
+        if (!this.counts.has(colourCount.colour) ||
+            this.counts.get(colourCount.colour) < colourCount.count) {
+            this.counts.set(colourCount.colour, colourCount.count);
+        }
+    }
+
+    static gridSquare(row, col) {
+        return {row: row, col: col};
+    }
+
+    getAdjacent(row, col, colour) {
+        const coords = [
+            ContiguousCounts.gridSquare(row + 1, col),
+            ContiguousCounts.gridSquare(row - 1, col),
+            ContiguousCounts.gridSquare(row, col - 1),
+            ContiguousCounts.gridSquare(row, col + 1),
+        ];
+
+        return coords.filter(c => {
+            if (c.row >= 0 &&
+                c.row < this.nRows &&
+                c.col >= 0 &&
+                c.col < this.nCols) {
+                const entry = this.getEntry(c.row, c.col);
+                if (entry.pending || entry.visited || entry.colour !== colour) {
+                    return false;
+                }
+                entry.pending = true;
+                return true;
+            }
+            return false;
+        });
+    }
 }
 
-function coord(row, col) {
-    return {row: row, col: col};
+class ColourEntry {
+    constructor(colour, visited, pending) {
+        this.colour = colour;
+        this.visited = visited;
+        this.pending = pending;
+    }
 }
 
-function getAdjacent(row, col) {
-    const coords = [
-        coord(row - 1, col),
-        coord(row + 1, col),
-        coord(row, col - 1),
-        coord(row, col + 1),
-    ];
+exports.ContiguousCounts = ContiguousCounts;
 
-    return coords.filter(c =>
-        c.row >= 0 &&
-        c.row < NROW &&
-        c.col >= 0 &&
-        c.col < NCOL);
-}
+// const COLOURS1 = [
+//     [1, 1, 2, 3],
+//     [1, 1, 2, 4],
+//     [2, 2, 1, 4]
+// ];
+//
+// const COLOURS2 = [
+//     [0,0,1,0,0,0,0,1,0,0,0,0,0],
+//     [0,0,0,0,0,0,0,1,1,1,0,0,0],
+//     [0,1,1,0,1,0,0,0,0,0,0,0,0],
+//     [0,1,0,0,1,1,0,0,1,0,1,0,0],
+//     [0,1,0,0,1,1,0,0,1,1,1,0,0],
+//     [0,0,0,0,0,0,0,0,0,0,1,0,0],
+//     [0,0,0,0,0,0,0,1,1,1,0,0,0],
+//     [0,0,0,0,0,0,0,1,1,0,0,0,0]
+// ];
+//
+// const COLOURS3 = [
+//     [1, 1, 2, 3],
+//     [1, 2, 3, 2],
+//     [3, 2, 2, 2]
+// ];
+//
+//
+//
+// const sut = new ContiguousCounts(COLOURS3);
+// colourCounts = sut.getContiguousCounts();
+// console.log("seen: ");
+// console.log(sut.seen);
+// console.log(Array.from(sut.seen).sort((a, b) => a - b));
+// console.log("counts: ");
+// console.log(colourCounts);
